@@ -1,7 +1,21 @@
 package com.invaders.musicon.musicon;
 
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.os.IBinder;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AppCompatActivity;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -13,8 +27,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.ActivityRecognition;
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationRequest;
 import com.spotify.sdk.android.authentication.AuthenticationResponse;
@@ -34,7 +52,12 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends Activity implements
-        SpotifyPlayer.NotificationCallback, ConnectionStateCallback, View.OnClickListener {
+        SpotifyPlayer.NotificationCallback, ConnectionStateCallback, View.OnClickListener,
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
+        SensorEventListener {
+
+    private SensorManager senSensorManager;
+    private Sensor senAccelerometer;
 
     private static final String CLIENT_ID = "a1c8dbd2755d4603a4bf953abfce567e";
     private static final String REDIRECT_URI = "musicon://callback";
@@ -70,14 +93,114 @@ public class MainActivity extends Activity implements
         }
     };
 
+    private BroadcastReceiver receiver;
+
+    public GoogleApiClient mApiClient;
+
+    private TextView activity;
+
+    private long lastUpdate = 0;
+    private float last_x, last_y, last_z;
+
+    @Override
+    public void onSensorChanged(SensorEvent sensorEvent) {
+        Sensor mySensor = sensorEvent.sensor;
+        if (mySensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            float x = sensorEvent.values[0];
+            float y = sensorEvent.values[1];
+            float z = sensorEvent.values[2];
+            long curTime = System.currentTimeMillis();
+            if ((curTime - lastUpdate) > 100) {
+                long diffTime = (curTime - lastUpdate);
+                lastUpdate = curTime;
+                float speed = Math.abs(x + y + z - last_x - last_y - last_z)/ diffTime * 10000;
+                if (speed < 1000 && speed > 500){
+                    Log.d("V","i'm in "+ System.currentTimeMillis() + "slow walking");
+                }
+                else if (speed > 1000 && speed <2000) {
+                    Log.d("V","i'm in "+ System.currentTimeMillis() + "walking");
+                }
+                else if (speed > 2000 && speed <3000) {
+                    Log.d("V","i'm in "+ System.currentTimeMillis() + "Jogging");
+                }
+                else if (speed > 3000 ) {
+                    Log.d("V","i'm in "+ System.currentTimeMillis() + "Sprint");
+                }
+                last_x = x;
+                last_y = y;
+                last_z = z;
+            }
+        }
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        Intent intent = new Intent( this, ActivityRecognizedService.class );
+        PendingIntent pendingIntent = PendingIntent.getService( this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT );
+        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates( mApiClient, 6000, pendingIntent );
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        LocalBroadcastManager.getInstance(this).registerReceiver((receiver),
+                new IntentFilter(ActivityRecognizedService.ACT_RESULT)
+        );
+    }
+
+    @Override
+    protected void onStop() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+        super.onStop();
+    }
+
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+//        mApiClient = new GoogleApiClient.Builder(this)
+//                .addApi(ActivityRecognition.API)
+//                .addConnectionCallbacks(this)
+//                .addOnConnectionFailedListener(this)
+//                .build();
+
+        //mApiClient.connect();
+
+        receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String s = intent.getStringExtra(ActivityRecognizedService.ACT_MESSAGE);
+                activity.setText(s);
+            }
+        };
+
+        senSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        senSensorManager.registerListener(this, senAccelerometer , SensorManager.SENSOR_DELAY_NORMAL);
+
         initUIElements();
     }
 
+
     private void initUIElements() {
+        activity = (TextView)findViewById(R.id.activity_value);
         Button bSpotifyLogin = (Button)findViewById(R.id.bSpotifyLogin);
         Button bPlay = (Button)findViewById(R.id.bPlay);
         Button bPause = (Button)findViewById(R.id.bPause);
@@ -86,6 +209,7 @@ public class MainActivity extends Activity implements
         bPlay.setOnClickListener(this);
         bPause.setOnClickListener(this);
         bNext.setOnClickListener(this);
+
     }
 
     @Override

@@ -24,6 +24,7 @@ repositories {
     flatDir {
         dirs 'libs'
     }
+    maven { url "https://oss.sonatype.org/content/groups/public/" }
 }
 
 dependencies {
@@ -33,6 +34,8 @@ dependencies {
     })
     compile 'com.spotify.sdk:spotify-android-auth-1.0.0@aar'
     compile 'com.spotify.sdk:spotify-player-24-noconnect-2.20b@aar'
+    compile 'com.getpebble:pebblekit:4.0.1@aar'
     compile 'com.android.support:appcompat-v7:25.1.0'
+    compile 'com.google.android.gms:play-services:10.0.1'
     testCompile 'junit:junit:4.12'
 }
