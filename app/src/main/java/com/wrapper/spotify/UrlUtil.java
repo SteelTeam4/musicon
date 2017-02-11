@@ -1,17 +1,14 @@
 package com.wrapper.spotify;
 
 import com.google.common.collect.ImmutableMap;
-import org.apache.commons.httpclient.URI;
-import org.apache.commons.httpclient.URIException;
 import com.wrapper.spotify.UtilProtos.Url.Scheme;
-import org.apache.commons.httpclient.util.URIUtil;
-import org.apache.commons.lang.StringEscapeUtils;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.apache.commons.httpclient.*;
+import org.apache.commons.httpclient.util.URIUtil;
 
 public abstract class UrlUtil {
 

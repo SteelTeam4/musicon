@@ -19,47 +19,6 @@
         android:layout_alignParentStart="true"
         android:id="@+id/bSpotifyLogin" />
 
-    <Button
-        android:text="Play"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_alignEnd="@+id/bSpotifyLogin"
-        android:layout_marginEnd="16dp"
-        android:id="@+id/bPlay" />
-
-    <Button
-        android:text="Pause"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/bPlay"
-        android:layout_centerHorizontal="true"
-        android:id="@+id/bPause" />
-
-    <Button
-        android:text="Next"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="19dp"
-        android:id="@+id/bNext"
-        android:layout_alignBaseline="@+id/bPause"
-        android:layout_alignBottom="@+id/bPause"
-        android:layout_toEndOf="@+id/bPause" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="textPersonName"
-        android:text="Name"
-        android:ems="10"
-        android:id="@+id/activity_value"
-        android:layout_marginTop="67dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignEnd="@+id/bNext"
-        style="@android:style/Widget.DeviceDefault.AutoCompleteTextView"
-        android:selectAllOnFocus="false"
-        android:singleLine="false" />
-
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -70,4 +29,45 @@
         android:layout_alignParentStart="true"
         android:layout_alignBottom="@+id/activity_value"
         android:layout_toStartOf="@+id/activity_value" />
+
+    <Button
+        android:text="Play"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/bPlay"
+        android:layout_marginTop="149dp"
+        android:layout_marginStart="50dp"
+        android:layout_below="@+id/activity_value"
+        android:layout_toEndOf="@+id/activity_label" />
+
+    <Button
+        android:text="Next"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/bNext"
+        android:layout_marginStart="46dp"
+        android:layout_alignBaseline="@+id/bPlay"
+        android:layout_alignBottom="@+id/bPlay"
+        android:layout_toEndOf="@+id/bPlay" />
+
+    <TextView
+        android:text="TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/activity_value"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+        android:layout_marginTop="55dp"
+        android:layout_below="@+id/speed_act"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="83dp" />
+
+    <TextView
+        android:text="TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/speed_act"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+        android:layout_alignParentTop="true"
+        android:layout_alignStart="@+id/activity_value" />
+
 </RelativeLayout>

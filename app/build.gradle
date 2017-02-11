@@ -28,7 +28,7 @@ repositories {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
@@ -39,6 +39,11 @@ dependencies {
     compile 'com.google.android.gms:play-services:10.0.1'
     testCompile 'junit:junit:4.12'
     compile 'commons-io:commons-io:2.5'
-    compile group: 'com.google.guava', name: 'guava', version: '19.0'
+    compile 'com.google.guava:guava:19.0'
     compile 'net.sf.json-lib:json-lib:2.4:jdk15'
+    compile 'com.google.protobuf:protobuf-java:3.2.0'
+    // https://mvnrepository.com/artifact/commons-codec/commons-codec
+    compile group: 'com.google.protobuf', name: 'protobuf-java', version: '2.5.0'
+    compile group: 'commons-codec', name: 'commons-codec', version: '1.5'
+    compile group: 'commons-httpclient', name: 'commons-httpclient', version: '3.1'
 }

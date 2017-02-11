@@ -1,10 +1,12 @@
 package com.invaders.musicon.musicon.models;
 
+import java.util.Comparator;
+
 /**
  * Created by vipul on 2/11/17.
  */
 
-public class TrackModel {
+public class TrackModel implements Comparable<TrackModel>{
 
     private String id;
     private String trackName;
@@ -37,5 +39,18 @@ public class TrackModel {
 
     public void setTrackName(String trackName) {
         this.trackName = trackName;
+    }
+
+    public int compareTo( TrackModel other) {
+        double thisTempo = this.getFeatures().getTempo();
+        double otherTempo = other.getFeatures().getTempo();
+        if (  thisTempo > otherTempo ) {
+            return 1;
+        } else if ( thisTempo < otherTempo ) {
+            return -1;
+        } else {
+            return 0;
+        }
+
     }
 }

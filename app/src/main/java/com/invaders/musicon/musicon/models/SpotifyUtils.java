@@ -1,44 +1,25 @@
-package com.invaders.musicon.musicon.service;
+package com.invaders.musicon.musicon.models;
 
-import com.invaders.musicon.musicon.models.PlaylistModel;
-import com.invaders.musicon.musicon.models.TrackFeatures;
-import com.invaders.musicon.musicon.models.TrackModel;
+import android.app.ProgressDialog;
+import android.os.AsyncTask;
+import android.os.SystemClock;
+import android.util.Log;
+
+import com.invaders.musicon.musicon.MainActivity;
 import com.wrapper.spotify.Api;
-import com.wrapper.spotify.methods.AbstractRequest;
 import com.wrapper.spotify.methods.AddTrackToPlaylistRequest;
-import com.wrapper.spotify.methods.AlbumRequest;
 import com.wrapper.spotify.methods.AudioFeatureRequest;
-import com.wrapper.spotify.methods.PlaylistRequest;
+import com.wrapper.spotify.methods.PlaylistCreationRequest;
 import com.wrapper.spotify.methods.PlaylistTracksRequest;
 import com.wrapper.spotify.methods.RemoveFromMySavedTracksRequest;
-import com.wrapper.spotify.methods.TrackRequest;
-import com.wrapper.spotify.methods.TrackSearchRequest;
 import com.wrapper.spotify.methods.UserPlaylistsRequest;
-import com.wrapper.spotify.methods.UserRequest;
-import com.wrapper.spotify.methods.authentication.ClientCredentialsGrantRequest;
-import com.wrapper.spotify.models.Album;
 import com.wrapper.spotify.models.AudioFeature;
-import com.wrapper.spotify.models.AuthorizationCodeCredentials;
-import com.wrapper.spotify.models.ClientCredentials;
 import com.wrapper.spotify.models.Page;
 import com.wrapper.spotify.models.Playlist;
 import com.wrapper.spotify.models.PlaylistTrack;
 import com.wrapper.spotify.models.SimplePlaylist;
-import com.wrapper.spotify.models.SimpleTrack;
 import com.wrapper.spotify.models.SnapshotResult;
 import com.wrapper.spotify.models.Track;
-import com.wrapper.spotify.models.User;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import android.os.AsyncTask;
-
-import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,20 +31,11 @@ import java.util.List;
  */
 
 
-public class SpotifyUtils extends AsyncTask <String, Void, String> {
-
-
-    protected String doInBackground(String... params) {
-            getPlayLists(params[0], params[1]);
-            return "Done";
-    }
-
-    protected void onPostExecute(Void feed) {
-    }
+public class SpotifyUtils {
 
 
 
-    private static Api getApiObject(String code) {
+    private Api getApiObject(String code) {
 
         final Api api = Api.builder()
                 .clientId("a1c8dbd2755d4603a4bf953abfce567e")
@@ -74,7 +46,7 @@ public class SpotifyUtils extends AsyncTask <String, Void, String> {
         return api;
     }
 
-    public static List<PlaylistModel> getPlayLists(String code, String userId) {
+    public List<PlaylistModel> getPlayLists(String code, String userId) {
 
         final Api api = getApiObject(code);
 
@@ -104,8 +76,36 @@ public class SpotifyUtils extends AsyncTask <String, Void, String> {
     }
 
 
+    public List<PlaylistModel> getPlayListsRaw(String code, String userId) {
 
-    public static List<TrackModel> getTracksFromPlayList(String code, String userId, String playlistId) {
+        final Api api = getApiObject(code);
+
+        List<PlaylistModel> modelList = null;
+        try {
+            final UserPlaylistsRequest request = api.getPlaylistsForUser(userId).build();
+            final Page<SimplePlaylist> playlistsPage = request.get();
+            PlaylistModel playlistModel = null;
+            modelList = new ArrayList<PlaylistModel>();
+
+            for (SimplePlaylist playlist : playlistsPage.getItems()) {
+                playlistModel = new PlaylistModel();
+                playlistModel.setUri(playlist.getUri());
+                playlistModel.setTotalTracks(playlist.getTracks().getTotal());
+                playlistModel.setPlaylistName(playlist.getName());
+                playlistModel.setPlaylistId(playlist.getId());
+//                playlistModel.setTracks(getTracksFromPlayList(code, playlist.getOwner().getId(), playlist.getId()));
+                modelList.add(playlistModel);
+            }
+        } catch (Exception e) {
+            System.out.println("Something went wrong!" + e.getMessage());
+        }
+        finally {
+            return modelList;
+        }
+    }
+
+
+    public List<TrackModel> getTracksFromPlayList(String code, String userId, String playlistId) {
 
         final Api api = getApiObject(code);
 
@@ -136,7 +136,7 @@ public class SpotifyUtils extends AsyncTask <String, Void, String> {
     }
 
 
-    public static TrackFeatures getFeaturesForTrack(String code, String trackId) {
+    public TrackFeatures getFeaturesForTrack(String code, String trackId) {
 
         final Api api = getApiObject(code);
         TrackFeatures features = null;
@@ -162,20 +162,20 @@ public class SpotifyUtils extends AsyncTask <String, Void, String> {
     }
 
 
-    public static void addTrackToPlayList(String code, String userId, String playlistId, String trackId) {
+    public void addTracksToPlayList(String code, String userId, String playlistId, ArrayList<String> trackURIs) {
 
         final Api api = getApiObject(code);
 
-        try {
-            AddTrackToPlaylistRequest request = api.addTracksToPlaylist(userId, playlistId, new ArrayList<String>(Arrays.asList(trackId))).build();
-            SnapshotResult result = request.get();
+        AddTrackToPlaylistRequest request;
 
-            String id = result.getSnapshotId();
-            System.out.println(id);
+        try {
+            request = api.addTracksToPlaylist(userId, playlistId, trackURIs).build();
+            request.postJson();
         }
 
         catch(Exception e) {
-
+            e.printStackTrace();
+            System.out.println("Something went wrong!" + e.getMessage());
         }
         finally {
 
@@ -183,7 +183,7 @@ public class SpotifyUtils extends AsyncTask <String, Void, String> {
 
     }
 
-    public static void removeTrackFromPlayList(String code, String userId, String playlistId, String trackId) {
+    public void removeTrackFromPlayList(String code, String userId, String playlistId, String trackId) {
 
         final Api api = getApiObject(code);
 
@@ -198,6 +198,25 @@ public class SpotifyUtils extends AsyncTask <String, Void, String> {
         }
         finally {
 
+        }
+    }
+
+    public Playlist createPlaylist(String code, String userId, String playlistTitle) {
+
+        final Api api = getApiObject(code);
+        final PlaylistCreationRequest request = api.createPlaylist(userId, playlistTitle)
+                .publicAccess(false)
+                .build();
+
+        Playlist playlist = null;
+        try {
+            playlist = request.get();
+            System.out.println("You just created this playlist!");
+            System.out.println("Its title is " + playlist.getName());
+        } catch (Exception e) {
+            System.out.println("Something went wrong in Create Playlist!" + e.getMessage());
+        }finally {
+            return playlist;
         }
     }
 
