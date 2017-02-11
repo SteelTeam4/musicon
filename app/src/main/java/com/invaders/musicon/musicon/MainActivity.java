@@ -65,6 +65,8 @@ public class MainActivity extends Activity implements
     // Can be any integer
     private static final int REQUEST_CODE = 1337;
 
+    private static final String USER_NAME = "vmassa";
+
     private static final String TAG = "MainActivityTAG";
     private SpotifyPlayer mPlayer;
     private PlaybackState mCurrentPlaybackState;
@@ -245,6 +247,10 @@ public class MainActivity extends Activity implements
         // Once we have obtained an authorization token, we can proceed with creating a Player.
         if (mPlayer == null) {
             Config playerConfig = new Config(getApplicationContext(), authResponse.getAccessToken(), CLIENT_ID);
+
+            // we call an asych to run the code to get the playlist related information
+            new SpotifyUtils().execute(response.getAccessToken(), USER_NAME);
+
             // Since the Player is a static singleton owned by the Spotify class, we pass "this" as
             // the second argument in order to refcount it properly. Note that the method
             // Spotify.destroyPlayer() also takes an Object argument, which must be the same as the

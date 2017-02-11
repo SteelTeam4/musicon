@@ -38,4 +38,7 @@ dependencies {
     compile 'com.android.support:appcompat-v7:25.1.0'
     compile 'com.google.android.gms:play-services:10.0.1'
     testCompile 'junit:junit:4.12'
+    compile 'commons-io:commons-io:2.5'
+    compile group: 'com.google.guava', name: 'guava', version: '19.0'
+    compile 'net.sf.json-lib:json-lib:2.4:jdk15'
 }
