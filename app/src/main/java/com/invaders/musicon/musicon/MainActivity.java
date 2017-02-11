@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 
 import com.spotify.sdk.android.authentication.AuthenticationClient;
@@ -22,7 +23,7 @@ import com.spotify.sdk.android.player.Spotify;
 import com.spotify.sdk.android.player.SpotifyPlayer;
 
 public class MainActivity extends Activity implements
-        SpotifyPlayer.NotificationCallback, ConnectionStateCallback {
+        SpotifyPlayer.NotificationCallback, ConnectionStateCallback, View.OnClickListener {
 
     private static final String CLIENT_ID = "a1c8dbd2755d4603a4bf953abfce567e";
     private static final String REDIRECT_URI = "musicon://callback";
@@ -30,13 +31,44 @@ public class MainActivity extends Activity implements
     // Can be any integer
     private static final int REQUEST_CODE = 1337;
 
+    private static final String TAG = "MainActivityTAG";
     private Player mPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        doLogin();
+        initUIElements();
+    }
+
+    private void initUIElements() {
+        Button bSpotifyLogin = (Button)findViewById(R.id.bSpotifyLogin);
+        Button bPlay = (Button)findViewById(R.id.bPlay);
+        Button bPause = (Button)findViewById(R.id.bPause);
+        Button bNext = (Button)findViewById(R.id.bNext);
+        bSpotifyLogin.setOnClickListener(this);
+        bPlay.setOnClickListener(this);
+        bPause.setOnClickListener(this);
+        bNext.setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(View v) {
+        final int id = v.getId();
+        switch ( id ) {
+            case R.id.bSpotifyLogin:
+                doLogin();
+                break;
+            case R.id.bPlay:
+                Log.d(TAG,"Clicked Play");
+                break;
+            case R.id.bPause:
+                Log.d(TAG,"Clicked Pause");
+                break;
+            case R.id.bNext:
+                Log.d(TAG,"Clicked Next");
+                break;
+        }
     }
 
     protected void doLogin() {
@@ -89,6 +121,8 @@ public class MainActivity extends Activity implements
                 break;
         }
     }
+
+
 
     @Override
     public void onPlaybackError(Error error) {
