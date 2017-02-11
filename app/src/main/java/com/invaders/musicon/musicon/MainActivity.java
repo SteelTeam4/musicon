@@ -33,6 +33,7 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognition;
+import com.invaders.musicon.musicon.service.SpotifyUtils;
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationRequest;
 import com.spotify.sdk.android.authentication.AuthenticationResponse;
@@ -249,7 +250,7 @@ public class MainActivity extends Activity implements
             Config playerConfig = new Config(getApplicationContext(), authResponse.getAccessToken(), CLIENT_ID);
 
             // we call an asych to run the code to get the playlist related information
-            new SpotifyUtils().execute(response.getAccessToken(), USER_NAME);
+            new SpotifyUtils().execute(authResponse.getAccessToken(), USER_NAME);
 
             // Since the Player is a static singleton owned by the Spotify class, we pass "this" as
             // the second argument in order to refcount it properly. Note that the method
