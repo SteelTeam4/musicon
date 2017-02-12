@@ -3,23 +3,16 @@ package com.invaders.musicon.musicon;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.AsyncTask;
-import android.os.IBinder;
-import android.support.annotation.IntegerRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AppCompatActivity;
-import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -33,7 +26,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.Api;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognition;
 import com.invaders.musicon.musicon.models.PlaylistModel;
@@ -52,11 +44,7 @@ import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.PlayerEvent;
 import com.spotify.sdk.android.player.Spotify;
 import com.spotify.sdk.android.player.SpotifyPlayer;
-import com.wrapper.spotify.methods.PlaylistCreationRequest;
 import com.wrapper.spotify.models.Playlist;
-import com.wrapper.spotify.models.Track;
-
-import org.apache.commons.io.filefilter.FalseFileFilter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,7 +52,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 
 public class MainActivity extends Activity implements
@@ -92,14 +79,6 @@ public class MainActivity extends Activity implements
     private static final String TAG = "MainActivityTAG";
     private SpotifyPlayer mPlayer;
     private PlaybackState mCurrentPlaybackState;
-
-    private static final List<String> TEST_ALBUM_TRACKS = Arrays.asList(
-            "spotify:track:0MllcbBCVEvDJ1jQBbfnp0",
-            "spotify:track:0Cim88rt6HG172g8yLSYS5",
-            "spotify:track:1mq49Np3oRodGq0HM4h3C9",
-            "spotify:track:7djK8tEU7rmzqU73aKBBEG",
-            "spotify:track:0CSBgxYPRCSd1Qzo1EzAN3"
-    );
 
     private BroadcastReceiver mNetworkStateReceiver;
     private Metadata mMetadata;
@@ -187,7 +166,6 @@ public class MainActivity extends Activity implements
 
         protected void onPostExecute(String v) {
             progressDialog.dismiss();
-            readyToControl = true;
             Log.d( "XXXX" + v, "complete" );
         }
     }
@@ -265,19 +243,17 @@ public class MainActivity extends Activity implements
                             Log.d("V", "Switching song to " + new_playing_song);
                             act_speed.setText(new_playing_song);
                             current_playing_song = new_playing_song;
-                            mPlayer.setShuffle(mOperationCallback,true);
+//                            mPlayer.setShuffle(mOperationCallback,true);
                             switch (current_playing_song) {
                                 case "slow walking":
                                     mPlayer.playUri(mOperationCallback, playlistMap.get("1"), 0, 0);
                                     break;
-
                                 case "walking":
                                     mPlayer.playUri(mOperationCallback, playlistMap.get("2"), 0, 0);
                                     break;
                                 case "Jogging":
                                     mPlayer.playUri(mOperationCallback, playlistMap.get("3"), 0, 0);
                                     break;
-
                                 case "Sprint":
                                     mPlayer.playUri(mOperationCallback, playlistMap.get("4"), 0, 0);
                                     break;
@@ -392,7 +368,7 @@ public class MainActivity extends Activity implements
 
     private void initUIElements() {
         activity_text = (TextView)findViewById(R.id.activity_value);
-        act_speed = (TextView)findViewById((R.id.speed_act));
+        act_speed = (TextView)findViewById((R.id.act_speed_val));
         Button bSpotifyLogin = (Button)findViewById(R.id.bSpotifyLogin);
         Button bPlay = (Button)findViewById(R.id.bPlay);
         Button bNext = (Button)findViewById(R.id.bNext);
@@ -414,6 +390,7 @@ public class MainActivity extends Activity implements
                 break;
             case R.id.bNext:
                 Log.d(TAG,"Clicked Next");
+                onSkipToNextButtonClicked();
                 break;
         }
     }
@@ -501,9 +478,13 @@ public class MainActivity extends Activity implements
 
     public void onPlayButtonClicked() {
         Log.d(TAG, "Clicked Play");
-        Log.d(TAG,""+songIdx);
-        songIdx = 0;
-        mPlayer.playUri(mOperationCallback,TEST_ALBUM_TRACKS.get(songIdx++),0,0);
+        if ( !readyToControl ) {
+            readyToControl = true;
+        } else {
+            readyToControl = false;
+            mPlayer.pause(mOperationCallback);
+        }
+        Toast.makeText( getApplicationContext(),"Pressed play.", Toast.LENGTH_SHORT ).show();
     }
 
 
@@ -530,16 +511,6 @@ public class MainActivity extends Activity implements
             if (mMetadata.currentTrack != null)
                 if (mMetadata.currentTrack.name != null)
                     activity_text.setText(mMetadata.currentTrack.name + mMetadata.currentTrack.artistName);
-//        if ( event == PlayerEvent.kSpPlaybackNotifyAudioDeliveryDone ) {
-//            Log.d( TAG, "Song just got over :(" );
-//            if ( songIdx >= TEST_ALBUM_TRACKS.size() ) {
-//                this.finish();
-//            } else {
-//                Log.d(TAG,""+songIdx);
-//                mPlayer.playUri(mOperationCallback,TEST_ALBUM_TRACKS.get(songIdx++),0,0);
-//
-//            }
-//        }
     }
 
     private Connectivity getNetworkConnectivity(Context context) {
